@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "2D OpenGL Brick Breaker", "2D OpenGL Brick Breaker\2D OpenGL Brick Breaker.vcxproj", "{5743E797-C5E1-4C94-A878-CEE5114BD05A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Debug|x64.ActiveCfg = Debug|Win32
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Debug|x64.Build.0 = Debug|Win32
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Debug|x86.ActiveCfg = Debug|Win32
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Debug|x86.Build.0 = Debug|Win32
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Release|x64.ActiveCfg = Release|x64
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Release|x64.Build.0 = Release|x64
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Release|x86.ActiveCfg = Release|Win32
+		{5743E797-C5E1-4C94-A878-CEE5114BD05A}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1DE9F951-CAA2-4216-AE62-9A4736E90216}
+	EndGlobalSection
+EndGlobal
