@@ -57,6 +57,7 @@ void main() {
 
 GLuint shaderID, uniformModel, uniformProjection, uniformView;
 float paddleX = 0.0f;  // 0 = center
+float paddleY = -0.8f;
 
 void addShader(GLuint theProgram, const char* shaderCode, GLenum shaderType) {
 	GLuint theShader = glCreateShader(shaderType);
@@ -135,6 +136,19 @@ void handleKeys(GLFWwindow* window, int key, int code, int action, int mode){
 	}
 }
 
+GLfloat ballX = 0.0f, ballY = -0.5f;
+GLfloat ballVelX = 0.6f, ballVelY = 0.6f; // units per second (because of delta time)
+//GLfloat ballVelX = 0.01f, ballVelY = 0.01f;
+
+const GLint brickRows = 5;
+const GLint brickCols = 10;
+GLfloat brickWidth = 0.18f;
+GLfloat brickHeight = 0.08f;
+
+bool bricks[brickRows][brickCols];
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
 
 int main() {
 	
@@ -174,6 +188,12 @@ int main() {
 	compileShader(vertexShaderSource, fragmentShaderSource);
 	rectangleModel();
 
+	for (int i = 0; i < brickRows; i++) {
+		for (int j = 0; j < brickCols; j++) {
+			bricks[i][j] = true;
+		}
+	}
+
 	glfwSetKeyCallback(window, handleKeys);
 
 
@@ -182,6 +202,10 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shaderID);
+
+		GLfloat now = glfwGetTime();
+		deltaTime = now - lastTime;
+		lastTime = now;
 
 		if (keys[GLFW_KEY_LEFT] || keys[GLFW_KEY_A]) {
 			paddleX -= 0.02f;  // move left
@@ -196,13 +220,91 @@ int main() {
 		if (paddleX > 1.0f - halfPaddle) paddleX = 1.0f - halfPaddle;
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(paddleX, -0.8f, 0.0f));
+		model = glm::translate(model, glm::vec3(paddleX, paddleY, 0.0f));
 		model = glm::scale(model, glm::vec3(0.3f, 0.1f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, &model[0][0]);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		// Ball dimensions
+		float ballRadius = 0.05f;
+		// Paddle dimensions
+		float paddleHalfWidth = 0.2f;
+		float paddleHalfHeight = 0.05f;
+
+		// Check collision (AABB)
+		if (ballX + ballRadius > paddleX - paddleHalfWidth &&
+			ballX - ballRadius < paddleX + paddleHalfWidth &&
+			ballY - ballRadius < paddleY + paddleHalfHeight &&
+			ballY + ballRadius > paddleY - paddleHalfHeight)
+		{
+			ballVelY = fabs(ballVelY); // ensure it bounces upward
+		}
+
+		// Update ball
+		ballX += ballVelX * deltaTime;
+		ballY += ballVelY * deltaTime;
+		//ballX += ballVelX;
+		//ballY += ballVelY;
+
+		// Wall Collision
+		if (ballX + ballRadius > 1.0f || ballX - ballRadius < -1.0f) {
+			ballVelX = -ballVelX; // bounce horizontally
+		}
+		if (ballY + ballRadius > 1.0f) {
+			ballVelY = -ballVelY; // bounce vertically
+		}
+
+		glm::mat4 ballModel = glm::mat4(1.0f);
+		ballModel = glm::translate(ballModel, glm::vec3(ballX, ballY, 0.0f));
+		ballModel = glm::scale(ballModel, glm::vec3(ballRadius, ballRadius, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, &ballModel[0][0]);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		// Draw Bricks
+		for (GLint row = 0; row < brickRows; row++) {
+			for (GLint col = 0; col < brickCols; col++) {
+				if (!bricks[row][col]) continue; // skip destroyed bricks
+
+				// Calculate brick position
+				/*float brickX = -1.0f + brickWidth / 2 + col * brickWidth;
+				float brickY = 0.5f + row * brickHeight;*/
+
+				float paddingX = 0.0221f;  // horizontal space between bricks
+				float paddingY = 0.02f;  // vertical space between bricks
+
+				float brickX = -1.0f + brickWidth / 2 + col * (brickWidth + paddingX);
+				float brickY = 0.5f + row * (brickHeight + paddingY);
+
+
+				glm::mat4 brickModel = glm::mat4(1.0f);
+				brickModel = glm::translate(brickModel, glm::vec3(brickX, brickY, 0.0f));
+				brickModel = glm::scale(brickModel, glm::vec3(brickWidth, brickHeight, 1.0f));
+				glUniformMatrix4fv(uniformModel, 1, GL_FALSE, &brickModel[0][0]);
+
+				glBindVertexArray(VAO);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+				glBindVertexArray(0);
+
+				// Brick-ball collision (simple AABB)
+				float brickHalfW = brickWidth / 2;
+				float brickHalfH = brickHeight / 2;
+
+				if (ballX + ballRadius > brickX - brickHalfW &&
+					ballX - ballRadius < brickX + brickHalfW &&
+					ballY + ballRadius > brickY - brickHalfH &&
+					ballY - ballRadius < brickY + brickHalfH)
+				{
+					ballVelY = -ballVelY;
+					bricks[row][col] = false; // remove brick
+				}
+			}
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
