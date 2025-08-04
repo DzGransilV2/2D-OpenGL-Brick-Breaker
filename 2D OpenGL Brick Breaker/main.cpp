@@ -150,6 +150,10 @@ bool bricks[brickRows][brickCols];
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
+int score = 0;
+int lives = 3;
+int totalBricks = brickRows * brickCols;
+
 int main() {
 	
 	if(!glfwInit()) {
@@ -195,7 +199,6 @@ int main() {
 	}
 
 	glfwSetKeyCallback(window, handleKeys);
-
 
 	while(!glfwWindowShouldClose(window)) {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -249,6 +252,23 @@ int main() {
 		//ballX += ballVelX;
 		//ballY += ballVelY;
 
+		// After ball position update
+		if (ballY < -1.0f) {
+			lives--;
+			if (lives > 0) {
+				// Reset ball and paddle
+				ballX = 0.0f;
+				ballY = -0.5f;
+				ballVelX = 0.4f;
+				ballVelY = 0.6f;
+				paddleX = 0.0f;
+			}
+			else {
+				printf("GAME OVER! Final score: %d\n", score);
+				glfwSetWindowShouldClose(window, true); // Close window
+			}
+		}
+
 		// Wall Collision
 		if (ballX + ballRadius > 1.0f || ballX - ballRadius < -1.0f) {
 			ballVelX = -ballVelX; // bounce horizontally
@@ -301,10 +321,23 @@ int main() {
 					ballY - ballRadius < brickY + brickHalfH)
 				{
 					ballVelY = -ballVelY;
-					bricks[row][col] = false; // remove brick
+					//bricks[row][col] = false; // remove brick
+
+					bricks[row][col] = false;
+					score += 10;
+					totalBricks--;
+
+					// Check win condition
+					if (totalBricks <= 0) {
+						printf("YOU WIN! Final score: %d\n", score);
+						glfwSetWindowShouldClose(window, true);
+					}
 				}
 			}
 		}
+
+		printf("Score: %d | Lives: %d\r", score, lives);
+		fflush(stdout);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
